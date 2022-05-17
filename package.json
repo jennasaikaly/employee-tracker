@@ -1,4 +1,24 @@
 {
+<<<<<<< HEAD
+=======
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "Challenge for Module 12 - SQL Challenge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jennasaikaly/employee-tracker.git"
+  },
+  "author": "Jenna Saikaly",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jennasaikaly/employee-tracker/issues"
+  },
+  "homepage": "https://github.com/jennasaikaly/employee-tracker#readme",
+>>>>>>> 4458d98f5a50b9b4f2822b44f73a952e6f901824
   "dependencies": {
     "console.table": "^0.10.0",
     "inquirer": "^8.2.4",
