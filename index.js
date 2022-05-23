@@ -1,110 +1,139 @@
-// const db = require('./config/connection');
+const connection = require('./config/connection');
 const inquirer = require("inquirer");
-// const cTable = require('console.table');
-const queries = require("./lib/queries");
+//const { addDepartment, addEmployee, addRole, readDepartments, readRoles, readEmployees } = require("./db/queries");
+
+const cTable = require('console.table');
+//const db = require("./db/queries");
 
 
 
 
 //menu prompts
-function menuPrompt(){
-  return inquirer
-  .prompt([
-    {
-      type:"list",
-      name: "menu",
-      message: "What would you like to do?",
-      choices:[
-        "View all departments",
-        "View all roles",
-        "View all employees",
-        "Add a department", 
-        "Add a role",
-        "Add an employee",
-        "Update an employee role",
-        "Update employee managers",
-        "View employees by manager",
-        "View employees by department",
-        "Delete department",
-        "Delete role",
-        "Delete employee",
-        "View total utilized budget of a department",
-        "EXIT"
-      ]
-    }
-  ])
-  .then(response => {
-    switch(response.menu){
-    case "View all departments":
-        viewDepartment();
-        break;
-    case "View all roles":
-        viewRole();
-        break;
-    case "View all employees":
-        viewEmployee();
-        break;
-    case "Add a department":
-        addDepartment();
-        break;
-    case "Add a role":
-        addRole();
-        break;
-    case "Add an employee":
-        addEmployee();
-        break;
-    case "Update an employee role":
-        updateRole();
-        break;
-    // case "Update employee managers":
-    //     updateEmployeeManager();
-    //     break;
-    // case "View employees by manager":
-    //     break;
-    // case "View employees by department":
-    //     break;
-    // case "Delete department":
-    //     deleteDepartment();
-    //     break;
-    // case "Delete role":
-    //     deleteRole();
-    //     break;
-    // case "Delete employee":
-    //     deleteEmployee();
-    //     break;
-    // case "View total utilized budget of a department":
-    //     break;
-    case "EXIT":
-        console.log("Thank you for using Employee Tracker");
-        break;
-    }
-  })
+function menuPrompt() {
+    return inquirer
+        .prompt([
+            {
+                type: "list",
+                name: "menu",
+                message: "What would you like to do?",
+                choices: [
+                    "View all departments",
+                    "View all roles",
+                    "View all employees",
+                    "Add a department",
+                    "Add a role",
+                    "Add an employee",
+                    "Update an employee role",
+                    "Update employee managers",
+                    "View employees by manager",
+                    "View employees by department",
+                    "Delete department",
+                    "Delete role",
+                    "Delete employee",
+                    "View total utilized budget of a department",
+                    "EXIT"
+                ]
+            }
+        ])
+        .then(response => {
+            switch (response.menu) {
+                case "View all departments":
+                    viewDepartments();
+                    break;
+                case "View all roles":
+                    viewRoles();
+                    break;
+                case "View all employees":
+                    viewEmployees();
+                    break;
+                case "Add a department":
+                    addNewDepartment();
+                    break;
+                case "Add a role":
+                    addNewRole();
+                    break;
+                case "Add an employee":
+                    addNewEmployee();
+                    break;
+                case "Update an employee role":
+                    updateEmployeeRole();
+                    break;
+                // case "Update employee managers":
+                //     updateEmployeeManager();
+                //     break;
+                // case "View employees by manager":
+                //     break;
+                // case "View employees by department":
+                //     break;
+                // case "Delete department":
+                //     deleteDepartment();
+                //     break;
+                // case "Delete role":
+                //     deleteRole();
+                //     break;
+                // case "Delete employee":
+                //     deleteEmployee();
+                //     break;
+                // case "View total utilized budget of a department":
+                //     break;
+                case "EXIT":
+                    console.log("Thank you for using Employee Tracker");
+                    break;
+            }
+        })
 }
 //add a department
-function addDepartment(){
-  return inquirer
-  .prompt([
-    {
-      type:"input",
-      name: "department",
-      message: "What is the department name?",
-      validate: nameInput => {
-        if (nameInput){
-          return true;
-        } else {
-          console.log("Please enter a Department name.");
-          return false;
-        }
-      }
-    }
-  ])
-  .then(function(answers){
-//   db.query(`INSERT INTO department (name) VALUES (?)`, 
-//   {name: answers.name}, 
-//   function(error){if (error) throw error;
-    console.log("Department has been added to the database");
+function addNewDepartment() {
+    return inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "department",
+                message: "What is the department name?",
+                validate: nameInput => {
+                    if (nameInput) {
+                        return true;
+                    } else {
+                        console.log("Please enter a Department name.");
+                        return false;
+                    }
+                }
+            }
+        ])
+        .then((response) => {
+            addDepartment(response);
+            console.log("Department has been added to the database");
+            menuPrompt()
+        })   
+}
+
+
+//view list of all Departments
+function viewDepartments() {
+    const sql = `SELECT * FROM departments`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        console.log('You are now viewing Departments')
+        console.table(results)
+    })
     menuPrompt();
-})
+    }; 
+
+// function viewDepartments() {
+//     db.readDepartments().then((result) => {
+//       console.table(result);
+//       menuPrompt();
+//     });
+//   }
+
+//   .then(function (answers) {
+//     addDepartment(answers);
+//     //   db.query(`INSERT INTO department (name) VALUES (?)`, 
+//     //   {name: answers.name}, 
+//     //   function(error){if (error) throw error;
+//     console.log("Department has been added to the database");
+//     menuPrompt();
+// })
 //   const sql = `INSERT INTO department (name)
 //   VALUES (?)`;
 //   const params = [answers];
@@ -113,11 +142,11 @@ function addDepartment(){
 //     console.log("Department has been added");
 //    });
 
-    
 
-}
+
+
 // // // //add a Role
-// // // function addRole(){
+// // // function addNewRole(){
 // // //   //this function returns a running of inquire.prompt(), thus returning
 // // // // what it returns, which is a Promise
 // // //   return inquirer
@@ -252,4 +281,4 @@ function addDepartment(){
 
 // // // // switch statement 
 // // // // case 
- menuPrompt();
+menuPrompt();
