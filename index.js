@@ -1,6 +1,8 @@
 // const db = require('./config/connection');
 const inquirer = require("inquirer");
 // const cTable = require('console.table');
+const queries = require("./lib/queries");
+
 
 
 
@@ -43,7 +45,6 @@ function menuPrompt(){
         viewEmployee();
         break;
     case "Add a department":
-        console.log(response);
         addDepartment();
         break;
     case "Add a role":
@@ -87,18 +88,23 @@ function addDepartment(){
       type:"input",
       name: "department",
       message: "What is the department name?",
-      validate: result => {
-        if (result){
+      validate: nameInput => {
+        if (nameInput){
           return true;
         } else {
-          console.log("Please enter a name.");
+          console.log("Please enter a Department name.");
           return false;
         }
       }
     }
   ])
-.then(function(answers){
-  console.log(answers);
+  .then(function(answers){
+//   db.query(`INSERT INTO department (name) VALUES (?)`, 
+//   {name: answers.name}, 
+//   function(error){if (error) throw error;
+    console.log("Department has been added to the database");
+    menuPrompt();
+})
 //   const sql = `INSERT INTO department (name)
 //   VALUES (?)`;
 //   const params = [answers];
@@ -106,8 +112,9 @@ function addDepartment(){
 //     if (error) throw error;
 //     console.log("Department has been added");
 //    });
-menuPrompt();
-})
+
+    
+
 }
 // // // //add a Role
 // // // function addRole(){
