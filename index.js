@@ -82,13 +82,44 @@ function menuPrompt() {
             }
         })
 }
+
+//view all departments 
+function viewDepartments() {
+    const sql = `SELECT * FROM departments`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        console.log('You are now viewing Departments')
+        console.table(results)
+    })
+    menuPrompt();
+};
+//View all Roles
+function viewRoles() {
+    const sql = `SELECT * FROM roles`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        console.log('You are now viewing Roles')
+        console.table(results)
+    })
+    menuPrompt();
+};
+//view all Employees
+function viewEmployees() {
+    const sql = `SELECT * FROM employees`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        console.log('You are now viewing Employees')
+        console.table(results)
+    })
+    menuPrompt();
+};
 //add a department
 function addNewDepartment() {
     return inquirer
         .prompt([
             {
                 type: "input",
-                name: "department",
+                name: "newDepartment",
                 message: "What is the department name?",
                 validate: nameInput => {
                     if (nameInput) {
@@ -100,99 +131,77 @@ function addNewDepartment() {
                 }
             }
         ])
-        .then((response) => {
-            addDepartment(response);
-            console.log("Department has been added to the database");
-            menuPrompt()
-        })   
+        .then(function (response) {
+            const sql = `INSERT INTO departments(name)
+            VALUES (?);`;
+            const params = response.newDepartment;
+            connection.query(sql, params, (err, res) => {
+                if (err) throw err;
+                console.log('New department has been added.');
+                menuPrompt();
+            });
+
+        });
+}
+
+//add a role 
+function addNewRole() {
+    return inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "roleTitle",
+                message: "What is the name of the Role?",
+                validate: roleTitleInput => {
+                    if (roleTitleInput) {
+                        return true;
+                    } else {
+                        console.log("Please enter a role.");
+                        return false;
+                    }
+                }
+            },
+            {
+                type: "input",
+                name: "roleSalary",
+                message: "What is the role's salary",
+                validate: roleSalaryInput => {
+                    if (roleSalaryInput) {
+                        return true;
+                    } else {
+                        console.log("Please enter an amount");
+                        return false;
+                    }
+                }
+            },
+            {
+                type: "input",
+                name: "roleDepartment",
+                message: "What is the department for this role?",
+                validate: roleDepartmentInput => {
+                    if (roleDepartmentInput) {
+                        return true;
+                    } else {
+                        console.log("Please enter a department");
+                        return false;
+                    }
+                }
+            }
+        ])
+        .then(function (response) {
+            const sql = `INSERT INTO roles (title, salary, department_id)
+            VALUES (?, ?, ?);`;
+            const params = [response.roleTitle, response.roleSalary, response.roleDepartment];
+            connection.query(sql, params, (err, res) => {
+                if (err) throw err;
+                console.log('New department has been added.');
+                menuPrompt();
+            });
+
+        });
 }
 
 
-//view list of all Departments
-function viewDepartments() {
-    const sql = `SELECT * FROM departments`;
-    connection.query(sql, (err, results) => {
-        if (err) throw err;
-        console.log('You are now viewing Departments')
-        console.table(results)
-    })
-    menuPrompt();
-    }; 
-
-// function viewDepartments() {
-//     db.readDepartments().then((result) => {
-//       console.table(result);
-//       menuPrompt();
-//     });
-//   }
-
-//   .then(function (answers) {
-//     addDepartment(answers);
-//     //   db.query(`INSERT INTO department (name) VALUES (?)`, 
-//     //   {name: answers.name}, 
-//     //   function(error){if (error) throw error;
-//     console.log("Department has been added to the database");
-//     menuPrompt();
-// })
-//   const sql = `INSERT INTO department (name)
-//   VALUES (?)`;
-//   const params = [answers];
-//   db.query(sql, params, (error, result) => {
-//     if (error) throw error;
-//     console.log("Department has been added");
-//    });
-
-
-
-
-// // // //add a Role
-// // // function addNewRole(){
-// // //   //this function returns a running of inquire.prompt(), thus returning
-// // // // what it returns, which is a Promise
-// // //   return inquirer
-// // //   .prompt([
-// // //       {
-// // //           type: "input",
-// // //           name: "role",
-// // //           message: "What is the name of the Role?",
-// // //           validate: roleInput => {
-// // //               if (roleInput) {
-// // //                 return true;
-// // //               } else {
-// // //                 console.log("Please enter a role.");
-// // //                 return false;
-// // //               }
-// // //             }
-// // //       },
-// // //       {
-// // //           type: "input",
-// // //           name: "salary",
-// // //           message: "What is the role's salary",
-// // //           validate: salaryInput => {
-// // //               if (salaryInput) {
-// // //                 return true;
-// // //               } else {
-// // //                 console.log("Please enter an amount");
-// // //                 return false;
-// // //               }
-// // //             }
-// // //       },
-// // //       {
-// // //           type: "input",
-// // //           name: "department",
-// // //           message: "What is the department for this role?",
-// // //           validate: departmentInput => {
-// // //               if (departmentInput) {
-// // //                 return true;
-// // //               } else {
-// // //                 console.log("Please enter a department");
-// // //                 return false;
-// // //               }
-// // //             }
-// // //       }
-// // //   ])
-// // // //  .then (answers => {     })
-// // // }
 // // // //add an Employee
 // // // function addEmployee(){
 // // //   //this function returns a running of inquire.prompt(), thus returning
