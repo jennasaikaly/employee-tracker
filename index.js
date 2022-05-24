@@ -132,74 +132,72 @@ function addNewDepartment() {
             }
         ])
         .then(function (response) {
-            const sql = `INSERT INTO departments(name)
+            const sql = `INSERT INTO departments(department_name)
             VALUES (?);`;
             const params = response.newDepartment;
             connection.query(sql, params, (err, res) => {
                 if (err) throw err;
-                console.log('New department has been added.');
+                console.log(response.newDepartment + " has been added to the 'Departments' Table.");
                 menuPrompt();
             });
 
         });
 }
 
-//add a role 
-function addNewRole() {
-    return inquirer
-        .prompt([
-            {
-                type: "input",
-                name: "roleTitle",
-                message: "What is the name of the Role?",
-                validate: roleTitleInput => {
-                    if (roleTitleInput) {
-                        return true;
-                    } else {
-                        console.log("Please enter a role.");
-                        return false;
-                    }
-                }
-            },
-            {
-                type: "input",
-                name: "roleSalary",
-                message: "What is the role's salary",
-                validate: roleSalaryInput => {
-                    if (roleSalaryInput) {
-                        return true;
-                    } else {
-                        console.log("Please enter an amount");
-                        return false;
-                    }
-                }
-            },
-            {
-                type: "input",
-                name: "roleDepartment",
-                message: "What is the department for this role?",
-                validate: roleDepartmentInput => {
-                    if (roleDepartmentInput) {
-                        return true;
-                    } else {
-                        console.log("Please enter a department");
-                        return false;
-                    }
-                }
-            }
-        ])
-        .then(function (response) {
-            const sql = `INSERT INTO roles (title, salary, department_id)
-            VALUES (?, ?, ?);`;
-            const params = [response.roleTitle, response.roleSalary, response.roleDepartment];
-            connection.query(sql, params, (err, res) => {
-                if (err) throw err;
-                console.log('New department has been added.');
-                menuPrompt();
-            });
+// //add a role 
+// function addNewRole() {
+//     return inquirer
+//         .prompt([
+//             {
+//                 type: "input",
+//                 name: "roleTitle",
+//                 message: "What is the name of the Role?",
+//                 validate: roleTitleInput => {
+//                     if (roleTitleInput) {
+//                         return true;
+//                     } else {
+//                         console.log("Please enter a role.");
+//                         return false;
+//                     }
+//                 }
+//             },
+//             {
+//                 type: "input",
+//                 name: "roleSalary",
+//                 message: "What is the role's salary (ex: 100000, 80000)",
+//                 validate: roleSalaryInput => {
+//                     if (roleSalaryInput) {
+//                         return true;
+//                     } else {
+//                         console.log("Please enter an amount");
+//                         return false;
+//                     }
+//                 }
+//             },
+//             {
+//                 type: "list",
+//                 name: "roleDepartment",
+//                 message: "What is the department for this role?",
+//                 choices: [
+//                     "Marketing",
+//                     "IT", 
+//                     "Finance",
+//                     "Administrative"
+//                 ]
+//             }
+//         ])
+//         .then(function (response) {
+//             const sql = `INSERT INTO roles (title, salary, department_id)
+//             VALUES (?, ?, ?);`;
+//             const params = [response.roleTitle, response.roleSalary, response.roleDepartment];
+//             connection.query(sql, params, (err, res) => {
+//                 if (err) throw err;
+//                 console.log(response.roleTitle + " has been added to the 'Roles' Table.");
+//                 menuPrompt();
+//             });
 
-        });
-}
+//         });
+// }
 
 
 // // // //add an Employee
