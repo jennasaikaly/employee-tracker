@@ -24,13 +24,13 @@ function menuPrompt() {
                     "Add a role",
                     "Add an employee",
                     "Update an employee role",
-                    "Update employee managers",
-                    "View employees by manager",
-                    "View employees by department",
-                    "Delete department",
-                    "Delete role",
-                    "Delete employee",
-                    "View total utilized budget of a department",
+                    // "Update employee managers",
+                    // "View employees by manager",
+                    // "View employees by department",
+                    // "Delete department",
+                    // "Delete role",
+                    // "Delete employee",
+                    // "View total utilized budget of a department",
                     "EXIT"
                 ]
             }
@@ -90,6 +90,7 @@ function viewDepartments() {
         if (err) throw err;
         console.log('You are now viewing Departments')
         console.table(results)
+
     })
     menuPrompt();
 };
@@ -143,120 +144,215 @@ function addNewDepartment() {
 
         });
 }
+//add a role 
+function addNewRole() {
+    const sql = `SELECT * FROM departments`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        // console.log('You are now viewing Departments')
+        // console.log(results);
+        let departmentChoices = results.map((department) => {
+            return {
+                value: department.id,
+                name: department.department_name
+            }
+        })
+        console.log(departmentChoices);
+        return inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "roleTitle",
+                    message: "What is the name of the Role?",
+                    validate: roleTitleInput => {
+                        if (roleTitleInput) {
+                            return true;
+                        } else {
+                            console.log("Please enter a role.");
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: "input",
+                    name: "roleSalary",
+                    message: "What is the role's salary (ex: 100000, 80000)",
+                    validate: roleSalaryInput => {
+                        if (roleSalaryInput) {
+                            return true;
+                        } else {
+                            console.log("Please enter an amount");
+                            return false;
+                        }
+                    }
+                },
+                {
+                    type: "list",
+                    name: "roleDepartment",
+                    message: "What is the department for this role?",
+                    choices:
+                        departmentChoices
+                }
+            ])
+            .then(function (response) {
+                console.log(response);
+                const sql = `INSERT INTO roles (title, salary, department_id)
+            VALUES (?, ?, ?);`;
+                const params = [response.roleTitle, response.roleSalary, response.roleDepartment];
+                connection.query(sql, params, (err, res) => {
+                    if (err) throw err;
+                    console.log(response.roleTitle + " has been added to the 'Roles' Table.");
+                    menuPrompt();
+                });
 
-// //add a role 
-// function addNewRole() {
-//     return inquirer
-//         .prompt([
-//             {
-//                 type: "input",
-//                 name: "roleTitle",
-//                 message: "What is the name of the Role?",
-//                 validate: roleTitleInput => {
-//                     if (roleTitleInput) {
-//                         return true;
-//                     } else {
-//                         console.log("Please enter a role.");
-//                         return false;
-//                     }
-//                 }
-//             },
-//             {
-//                 type: "input",
-//                 name: "roleSalary",
-//                 message: "What is the role's salary (ex: 100000, 80000)",
-//                 validate: roleSalaryInput => {
-//                     if (roleSalaryInput) {
-//                         return true;
-//                     } else {
-//                         console.log("Please enter an amount");
-//                         return false;
-//                     }
-//                 }
-//             },
-//             {
-//                 type: "list",
-//                 name: "roleDepartment",
-//                 message: "What is the department for this role?",
-//                 choices: [
-//                     "Marketing",
-//                     "IT", 
-//                     "Finance",
-//                     "Administrative"
-//                 ]
-//             }
-//         ])
-//         .then(function (response) {
-//             const sql = `INSERT INTO roles (title, salary, department_id)
-//             VALUES (?, ?, ?);`;
-//             const params = [response.roleTitle, response.roleSalary, response.roleDepartment];
-//             connection.query(sql, params, (err, res) => {
-//                 if (err) throw err;
-//                 console.log(response.roleTitle + " has been added to the 'Roles' Table.");
-//                 menuPrompt();
-//             });
+            });
+    })
+}
+//add an Employee
+function addNewEmployee() {
+    const sql = `SELECT * FROM employees`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        // console.log('You are now viewing Departments')
+        // console.log(results);
+        let managerChoices = results.map((manager) => {
+            return {
+                value: manager.id,
+                name: manager.first_name + " " + manager.last_name
+            }
+        })
+            managerChoices.push({
+                value: null,
+                name: "No Manager"
+            })
+        const sql = `SELECT * FROM roles`;
+        connection.query(sql, (err, results) => {
+            if (err) throw err;
+            // console.log('You are now viewing Departments')
+            // console.log(results);
+            let roleChoices = results.map((role) => {
+                return {
+                    value: role.id,
+                    name: role.title
+                }
+            })
+            console.log(managerChoices);
+            //this function returns a running of inquire.prompt(), thus returning
+            // what it returns, which is a Promise
+            return inquirer
+                .prompt([
+                    {
+                        type: "input",
+                        name: "firstname",
+                        message: "What is the employee's first name?",
+                        validate: firstnameInput => {
+                            if (firstnameInput) {
+                                return true;
+                            } else {
+                                console.log("Please enter a first name.");
+                                return false;
+                            }
+                        }
+                    },
+                    {
+                        type: "input",
+                        name: "lastname",
+                        message: "What is the employee's last name?",
+                        validate: lastnameInput => {
+                            if (lastnameInput) {
+                                return true;
+                            } else {
+                                console.log("Please enter a last name");
+                                return false;
+                            }
+                        }
+                    },
+                    {
+                        type: "list",
+                        name: "role",
+                        message: "What is the Employee's role?",
+                        choices: roleChoices
+                    },
+                    {
+                        type: "list",
+                        name: "manager",
+                        message: "Who is the Employee's manager?",
+                        choices: managerChoices
+                    }
+                ])
+                .then(function (response) {
+                    console.log(response);
+                    const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+    VALUES (?, ?, ?, ?);`;
+                    const params = [response.firstname, response.lastname, response.role, response.manager];
+                    connection.query(sql, params, (err, res) => {
+                        if (err) throw err;
+                        console.log(response.firstname + " " + response.lastname + " has been added to the 'Employees' Table.");
+                        menuPrompt();
+                    });
+                })
+        })
+    });
+}
+//update Employee Role
+function updateEmployeeRole() {
+    const sql = `SELECT * FROM employees`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        // console.log('You are now viewing Departments')
+        // console.log(results);
+        let employeeChoices = results.map((employee) => {
+            return {
+                value: employee.id,
+                name: employee.first_name + " " + employee.last_name
+            }
+        })
+        const sql = `SELECT * FROM roles`;
+        connection.query(sql, (err, results) => {
+            if (err) throw err;
+            // console.log('You are now viewing Departments')
+            // console.log(results);
+            let roleChoices = results.map((role) => {
+                return {
+                    value: role.id,
+                    name: role.title
+                }
+            })
+            //console.log(managerChoices);
+            //this function returns a running of inquire.prompt(), thus returning
+            // what it returns, which is a Promise
+            return inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "employee",
+                        message: "Which employee would you like to reassign?",
+                        choices: employeeChoices
+                    },
+                    {
+                        type: "list",
+                        name: "role",
+                        message: "Which role would you like to reassign them to?",
+                        choices: roleChoices
+                    },
+                ])
+                .then(function (response) {
+                    const sql = `UPDATE employees SET role_id = ? WHERE id = ?`;
+                    const params = [response.role, response.employee];
+                    connection.query(sql, params, (err, res) => {
+                        if (err) throw err;
+                        console.log( "Role has been updated.");
+                        menuPrompt();
+                    });
+                })
+        })
+    });
+}
 
-//         });
-// }
 
 
-// // // //add an Employee
-// // // function addEmployee(){
-// // //   //this function returns a running of inquire.prompt(), thus returning
-// // // // what it returns, which is a Promise
-// // //   return inquirer
-// // //   .prompt([
-// // //       {
-// // //           type: "input",
-// // //           name: "firstname",
-// // //           message: "What is the employee's first name?",
-// // //           validate: firstnameInput => {
-// // //               if (firstnameInput) {
-// // //                 return true;
-// // //               } else {
-// // //                 console.log("Please enter a first name.");
-// // //                 return false;
-// // //               }
-// // //             }
-// // //       },
-// // //       {
-// // //           type: "input",
-// // //           name: "lastname",
-// // //           message: "What is the employee's last name?",
-// // //           validate: lastnameInput => {
-// // //               if (lastnameInput) {
-// // //                 return true;
-// // //               } else {
-// // //                 console.log("Please enter a last name");
-// // //                 return false;
-// // //               }
-// // //             }
-// // //       },
-// // //       {
-// // //           type: "input",
-// // //           name: "role",
-// // //           message: "What is the Employee's role?",
-// // //           validate: roleInput => {
-// // //               if (roleInput) {
-// // //                 return true;
-// // //               } else {
-// // //                 console.log("Please enter a role");
-// // //                 return false;
-// // //               }
-// // //             }
-// // //       },
-// // //       {
-// // //           type: "input",
-// // //           name: "manager",
-// // //           message: "Who is the Employee's manager?",
-// // //       }   
-// // //   ])
-// // //  // .then (response => {     })
-// // // }
-// // // //update Employee Role
-// // // function updateEmployee(){
-// // //   console.log("Update Employee");
-// // // }
+
+
 // // // //update Employee Managers
 // // // function updateManager(){
 // // //   console.log("Update Manager");
