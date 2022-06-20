@@ -1,11 +1,6 @@
 const connection = require('./config/connection');
 const inquirer = require("inquirer");
-//const { addDepartment, addEmployee, addRole, readDepartments, readRoles, readEmployees } = require("./db/queries");
-
 const cTable = require('console.table');
-//const db = require("./db/queries");
-
-
 
 
 //menu prompts
@@ -82,7 +77,6 @@ function menuPrompt() {
             }
         })
 }
-
 //view all departments 
 function viewDepartments() {
     const sql = `SELECT * FROM departments`;
@@ -96,7 +90,11 @@ function viewDepartments() {
 };
 //View all Roles
 function viewRoles() {
-    const sql = `SELECT * FROM roles`;
+    const sql = `SELECT roles.id, roles.title,roles.salary, departments.name 
+                 AS department_name
+                 FROM roles
+                 LEFT JOIN departments 
+                 ON roles.department_id = departments.id`;
     connection.query(sql, (err, results) => {
         if (err) throw err;
         console.log('You are now viewing Roles')
@@ -106,7 +104,19 @@ function viewRoles() {
 };
 //view all Employees
 function viewEmployees() {
-    const sql = `SELECT * FROM employees`;
+    const sql = `
+    SELECT 
+        employees.id, 
+        employees.first_name, 
+        employees.last_name, 
+        roles.salary, 
+        roles.title AS job_title, 
+        departments.name AS department_name,
+    CONCAT(first_name, ' ', last_name) AS manager_name    
+    FROM employees
+    LEFT JOIN roles ON employees.role_id = roles.id
+    LEFT JOIN departments ON roles.department_id = departments.id
+    `;
     connection.query(sql, (err, results) => {
         if (err) throw err;
         console.log('You are now viewing Employees')
@@ -114,6 +124,7 @@ function viewEmployees() {
     })
     menuPrompt();
 };
+
 //add a department
 function addNewDepartment() {
     return inquirer
@@ -370,18 +381,4 @@ function updateEmployeeRole() {
 // // //    console.log("Delete Employee");
 // // // }
 
-
-
-
-
-// // // // function getAllDepartments {
-// // // //   prompt inquirer
-// // // //   questions for get all getAllDepartments
-// // // //   .then
-// // // //   call query 
-
-// // // // }
-
-// // // // switch statement 
-// // // // case 
 menuPrompt();
