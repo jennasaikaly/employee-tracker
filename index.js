@@ -1,6 +1,6 @@
 const connection = require('./config/connection');
 const inquirer = require("inquirer");
-const cTable = require('console.table');
+require('console.table');
 
 
 //menu prompts
@@ -19,7 +19,7 @@ function menuPrompt() {
                     "Add a role",
                     "Add an employee",
                     "Update an employee role",
-                    // "Update employee managers",
+                    "Update employee managers",
                     // "View employees by manager",
                     // "View employees by department",
                     // "Delete department",
@@ -53,9 +53,9 @@ function menuPrompt() {
                 case "Update an employee role":
                     updateEmployeeRole();
                     break;
-                // case "Update employee managers":
-                //     updateEmployeeManager();
-                //     break;
+                case "Update employee managers":
+                    updateEmployeeManager();
+                    break;
                 // case "View employees by manager":
                 //     break;
                 // case "View employees by department":
@@ -84,9 +84,10 @@ function viewDepartments() {
         if (err) throw err;
         console.log('You are now viewing Departments')
         console.table(results)
-
+        console.log(results)
+        menuPrompt();
     })
-    menuPrompt();
+
 };
 //View all Roles
 function viewRoles() {
@@ -99,30 +100,33 @@ function viewRoles() {
         if (err) throw err;
         console.log('You are now viewing Roles')
         console.table(results)
+        menuPrompt();
     })
-    menuPrompt();
+
 };
 //view all Employees
 function viewEmployees() {
     const sql = `
     SELECT 
-        employees.id, 
+        employees.id AS employee_id, 
         employees.first_name, 
         employees.last_name, 
         roles.salary, 
         roles.title AS job_title, 
         departments.name AS department_name,
-    CONCAT(first_name, ' ', last_name) AS manager_name    
+    CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
     FROM employees
     LEFT JOIN roles ON employees.role_id = roles.id
     LEFT JOIN departments ON roles.department_id = departments.id
+    LEFT JOIN employees manager ON manager.id = employees.manager_id
     `;
     connection.query(sql, (err, results) => {
         if (err) throw err;
         console.log('You are now viewing Employees')
         console.table(results)
-    })
-    menuPrompt();
+        menuPrompt();
+    });
+
 };
 
 //add a department
@@ -232,10 +236,10 @@ function addNewEmployee() {
                 name: manager.first_name + " " + manager.last_name
             }
         })
-            managerChoices.push({
-                value: null,
-                name: "No Manager"
-            })
+        managerChoices.push({
+            value: null,
+            name: "No Manager"
+        })
         const sql = `SELECT * FROM roles`;
         connection.query(sql, (err, results) => {
             if (err) throw err;
@@ -305,6 +309,7 @@ function addNewEmployee() {
         })
     });
 }
+
 //update Employee Role
 function updateEmployeeRole() {
     const sql = `SELECT * FROM employees`;
@@ -352,7 +357,7 @@ function updateEmployeeRole() {
                     const params = [response.role, response.employee];
                     connection.query(sql, params, (err, res) => {
                         if (err) throw err;
-                        console.log( "Role has been updated.");
+                        console.log("Role has been updated.");
                         menuPrompt();
                     });
                 })
@@ -364,10 +369,66 @@ function updateEmployeeRole() {
 
 
 
-// // // //update Employee Managers
-// // // function updateManager(){
-// // //   console.log("Update Manager");
-// // // }
+//update Employee Managers
+function updateEmployeeManager() {
+    const sql = `SELECT * FROM employees`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        // console.log('You are now viewing Departments')
+        // console.log(results);
+        let employeeChoices = results.map((employee) => {
+            return {
+                value: employee.id,
+                name: employee.first_name + " " + employee.last_name
+            }
+        })
+        const sql = `SELECT * FROM employees`;
+        connection.query(sql, (err, results) => {
+            if (err) throw err;
+            // console.log('You are now viewing Departments')
+            // console.log(results);
+            let managerChoices = results.map((manager) => {
+                return {
+                    value: manager.id,
+                    name: manager.first_name + " " + manager.last_name
+                }
+            })
+            managerChoices.push({
+                value: null,
+                name: "No Manager"
+            })
+            //console.log(managerChoices);
+            //this function returns a running of inquire.prompt(), thus returning
+            // what it returns, which is a Promise
+            return inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "employee",
+                        message: "For which employee would you like to update managers?",
+                        choices: employeeChoices
+                    },
+                    {
+                        type: "list",
+                        name: "manager",
+                        message: "Who is their new Manager?",
+                        choices: managerChoices
+                    },
+                ])
+                .then(function (response) {
+                    const sql = `UPDATE employees SET manager_id = ? WHERE id = ?`;
+                    const params = [response.manager, response.employee];
+                    connection.query(sql, params, (err, res) => {
+                        if (err) throw err;
+                        console.log("Manager has been updated.");
+                        menuPrompt();
+                    });
+                })
+        })
+    });
+}
+
+
 // // // //delete Department
 // // // function deleteDepartment(){
 // // //   console.log("Delete Department");
