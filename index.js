@@ -21,7 +21,7 @@ function menuPrompt() {
                     "Update an employee role",
                     "Update employee managers",
                     "View employees by manager",
-                    // "View employees by department",
+                    "View employees by department",
                     "Delete department",
                     "Delete role",
                     "Delete employee",
@@ -59,9 +59,9 @@ function menuPrompt() {
                 case "View employees by manager":
                     viewEmployeesByManager();
                     break;
-                // case "View employees by department":
-                // viewEmployeesByDepartment();
-                //     break;
+                case "View employees by department":
+                viewEmployeesByDepartment();
+                    break;
                 case "Delete department":
                     deleteDepartment();
                     break;
@@ -444,6 +444,52 @@ function viewEmployeesByManager() {
                 WHERE employees.manager_id = ?
                 `
                 const params = [response.manager];
+                connection.query(sql, params, (err, response) => {
+                    if (err) throw err;
+                    console.log("You are now viewing the Employee List");
+                    console.table(response);
+                    menuPrompt();
+                });
+            })
+    })
+}
+//view Employees By Department
+function viewEmployeesByDepartment() {
+    const sql = `SELECT * FROM departments`;
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        let departmentChoices = results.map((department) => {
+            return {
+                value: department.id,
+                name: department.name
+            }
+        })
+        return inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "department",
+                    message: "For which Department would you like to see an Employee List?",
+                    choices: departmentChoices
+                },
+            ])
+            .then(function (response) {
+                const sql = `
+                SELECT 
+                    employees.id AS employee_id, 
+                    employees.first_name, 
+                    employees.last_name, 
+                    roles.salary, 
+                    roles.title AS job_title, 
+                    departments.name AS department_name,
+                CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
+                FROM employees
+                LEFT JOIN roles ON employees.role_id = roles.id
+                LEFT JOIN departments ON roles.department_id = departments.id
+                LEFT JOIN employees manager ON manager.id = employees.manager_id
+                WHERE employees.role_id = ?
+                `
+                const params = [response.department];
                 connection.query(sql, params, (err, response) => {
                     if (err) throw err;
                     console.log("You are now viewing the Employee List");
