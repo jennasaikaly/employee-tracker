@@ -23,8 +23,8 @@ function menuPrompt() {
                     // "View employees by manager",
                     // "View employees by department",
                     "Delete department",
-                    // "Delete role",
-                    // "Delete employee",
+                    "Delete role",
+                    "Delete employee",
                     // "View total utilized budget of a department",
                     "EXIT"
                 ]
@@ -65,12 +65,12 @@ function menuPrompt() {
                 case "Delete department":
                     deleteDepartment();
                     break;
-                // case "Delete role":
-                //     deleteRole();
-                //     break;
-                // case "Delete employee":
-                //     deleteEmployee();
-                //     break;
+                case "Delete role":
+                    deleteRole();
+                    break;
+                case "Delete employee":
+                    deleteEmployee();
+                    break;
                 // case "View total utilized budget of a department":
                 //     break;
                 case "EXIT":
@@ -471,63 +471,63 @@ function updateEmployeeManager() {
 //                     });
 //                 })
 //         })
-
+   
 // }
 
+ 
+    //     //this function returns a running of inquire.prompt(), thus returning
+    //     // what it returns, which is a Promise
+    //     return inquirer
+    //         .prompt([
+    //             {
+    //                 type: "list",
+    //                 name: "manager",
+    //                 message: "For which Manager would you like to see an Employee?",
+    //                 choices: managerChoices
+    //             },
+    //             {
+    //                 type: "list",
+    //                 name: "manager",
+    //                 message: "Who is their new Manager?",
+    //                 choices: managerChoices
+    //             },
+    //         ]);
+    //             .then(function (response) {
+    //             const sql = `
+    // SELECT 
+    //     employees.id AS employee_id, 
+    //     employees.first_name, 
+    //     employees.last_name, 
+    //     roles.salary, 
+    //     roles.title AS job_title, 
+    //     departments.name AS department_name,
+    // CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
+    // FROM employees
+    // LEFT JOIN roles ON employees.role_id = roles.id
+    // LEFT JOIN departments ON roles.department_id = departments.id
+    // LEFT JOIN employees manager ON manager.id = employees.manager_id
+    // `;
+    //             const params = [response.manager, response.employee];
+    //             connection.query(sql, params, (err, res) => {
+    //                 if (err) throw err;
+    //                 console.log("Manager has been updated.");
+    //                 menuPrompt();
+    //             });
+    //         })
+    // });
 
-//     //this function returns a running of inquire.prompt(), thus returning
-//     // what it returns, which is a Promise
-//     return inquirer
-//         .prompt([
-//             {
-//                 type: "list",
-//                 name: "manager",
-//                 message: "For which Manager would you like to see an Employee?",
-//                 choices: managerChoices
-//             },
-//             {
-//                 type: "list",
-//                 name: "manager",
-//                 message: "Who is their new Manager?",
-//                 choices: managerChoices
-//             },
-//         ]);
-//             .then(function (response) {
-//             const sql = `
-// SELECT 
-//     employees.id AS employee_id, 
-//     employees.first_name, 
-//     employees.last_name, 
-//     roles.salary, 
-//     roles.title AS job_title, 
-//     departments.name AS department_name,
-// CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
-// FROM employees
-// LEFT JOIN roles ON employees.role_id = roles.id
-// LEFT JOIN departments ON roles.department_id = departments.id
-// LEFT JOIN employees manager ON manager.id = employees.manager_id
-// `;
-//             const params = [response.manager, response.employee];
-//             connection.query(sql, params, (err, res) => {
-//                 if (err) throw err;
-//                 console.log("Manager has been updated.");
-//                 menuPrompt();
-//             });
-//         })
-// });
-
-// connection.query(sql, (err, results) => {
-//     if (err) throw err;
-//     console.log('You are now viewing Employees')
-//     console.table(results)
-//     menuPrompt();
-// });
+    // connection.query(sql, (err, results) => {
+    //     if (err) throw err;
+    //     console.log('You are now viewing Employees')
+    //     console.table(results)
+    //     menuPrompt();
+    // });
 
 
 
-//delete Department
-function deleteDepartment() {
-    const sql = `SELECT * FROM departments`;
+    //delete Department
+    function deleteDepartment(){
+        const sql = `SELECT * FROM departments`;
     connection.query(sql, (err, results) => {
         if (err) throw err;
         // console.log('You are now viewing Departments')
@@ -545,7 +545,7 @@ function deleteDepartment() {
                     type: "list",
                     name: "department",
                     message: "Which department would you like to delete?",
-                    choices: departmentChoices
+                    choices:departmentChoices
                 }
             ])
             .then(function (response) {
@@ -554,7 +554,7 @@ function deleteDepartment() {
                 const params = [response.department];
                 connection.query(sql, params, (err, response) => {
                     if (err) throw err;
-
+                    
                     console.log("This department has been deleted from the 'Departments' table.");
                     menuPrompt();
                 });
@@ -562,16 +562,82 @@ function deleteDepartment() {
     })
 }
 
+    
 
 
+    // // delete Role
+    function deleteRole(){
+        const sql = `SELECT * FROM roles`;
+        connection.query(sql, (err, results) => {
+            if (err) throw err;
+            // console.log('You are now viewing Departments')
+            // console.log(results);
+            let roleChoices = results.map((role) => {
+                return {
+                    value: role.id,
+                    name: role.title
+                }
+            })
+            console.log(roleChoices);
+            return inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "role",
+                        message: "Which role would you like to delete?",
+                        choices:roleChoices
+                    }
+                ])
+                .then(function (response) {
+                    console.log(response);
+                    const sql = `DELETE FROM roles WHERE id = ?`;
+                    const params = [response.role];
+                    connection.query(sql, params, (err, response) => {
+                        if (err) throw err;
+                        
+                        console.log("This role has been deleted from the 'Roles' table.");
+                        menuPrompt();
+                    });
+                });
+        })
+    }
 
-// // delete Role
-// function deleteRole(){
-//   console.log("Delete Role");
-// }
-// // delete Employee
-// function deleteEmployee(){
-//    console.log("Delete Employee");
-// }
 
-menuPrompt();
+    // delete Employee
+    function deleteEmployee(){
+        const sql = `SELECT * FROM employees`;
+        connection.query(sql, (err, results) => {
+            if (err) throw err;
+            // console.log('You are now viewing Departments')
+            // console.log(results);
+            let employeeChoices = results.map((employee) => {
+                return {
+                    value: employee.id,
+                    name: employee.first_name + " " + employee.last_name
+                }
+            })
+            console.log(employeeChoices);
+            return inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "employee",
+                        message: "Which Employee would you like to delete?",
+                        choices:employeeChoices
+                    }
+                ])
+                .then(function (response) {
+                    console.log(response);
+                    const sql = `DELETE FROM employees WHERE id = ?`;
+                    const params = [response.employee];
+                    connection.query(sql, params, (err, response) => {
+                        if (err) throw err;
+                        
+                        console.log("This Employee has been deleted from the 'Employees' table.");
+                        menuPrompt();
+                    });
+                });
+        })
+    }
+
+    menuPrompt();
