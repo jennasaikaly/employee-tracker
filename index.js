@@ -22,10 +22,10 @@ function menuPrompt() {
                     "Update employee managers",
                     "View employees by manager",
                     "View employees by department",
+                    "View total utilized budget of a department",
                     "Delete department",
                     "Delete role",
                     "Delete employee",
-                    // "View total utilized budget of a department",
                     "EXIT"
                 ]
             }
@@ -60,7 +60,10 @@ function menuPrompt() {
                     viewEmployeesByManager();
                     break;
                 case "View employees by department":
-                viewEmployeesByDepartment();
+                    viewEmployeesByDepartment();
+                    break;
+                case "View total utilized budget of a department":
+                    viewDepartmentBudget();
                     break;
                 case "Delete department":
                     deleteDepartment();
@@ -71,8 +74,6 @@ function menuPrompt() {
                 case "Delete employee":
                     deleteEmployee();
                     break;
-                // case "View total utilized budget of a department":
-                //     break;
                 case "EXIT":
                     console.log("Thank you for using Employee Tracker");
                     break;
@@ -83,10 +84,10 @@ function menuPrompt() {
 //view all departments 
 function viewDepartments() {
     const sql = `SELECT * FROM departments`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
         console.log('You are now viewing Departments')
-        console.table(results)
+        console.table(response)
         menuPrompt();
     })
 };
@@ -98,10 +99,10 @@ function viewRoles() {
                  FROM roles
                  LEFT JOIN departments 
                  ON roles.department_id = departments.id`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
         console.log('You are now viewing Roles')
-        console.table(results)
+        console.table(response)
         menuPrompt();
     })
 };
@@ -122,10 +123,10 @@ function viewEmployees() {
     LEFT JOIN departments ON roles.department_id = departments.id
     LEFT JOIN employees manager ON manager.id = employees.manager_id
     `;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
         console.log('You are now viewing Employees')
-        console.table(results)
+        console.table(response)
         menuPrompt();
     });
 
@@ -165,9 +166,9 @@ function addNewDepartment() {
 //add a role 
 function addNewRole() {
     const sql = `SELECT * FROM departments`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let departmentChoices = results.map((department) => {
+        let departmentChoices = response.map((department) => {
             return {
                 value: department.id,
                 name: department.name
@@ -226,9 +227,9 @@ function addNewRole() {
 //add an Employee
 function addNewEmployee() {
     const sql = `SELECT * FROM employees`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let managerChoices = results.map((manager) => {
+        let managerChoices = response.map((manager) => {
             return {
                 value: manager.id,
                 name: manager.first_name + " " + manager.last_name
@@ -239,9 +240,9 @@ function addNewEmployee() {
             name: "No Manager"
         })
         const sql = `SELECT * FROM roles`;
-        connection.query(sql, (err, results) => {
+        connection.query(sql, (err, response) => {
             if (err) throw err;
-            let roleChoices = results.map((role) => {
+            let roleChoices = response.map((role) => {
                 return {
                     value: role.id,
                     name: role.title
@@ -305,18 +306,18 @@ function addNewEmployee() {
 //update Employee Role
 function updateEmployeeRole() {
     const sql = `SELECT * FROM employees`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let employeeChoices = results.map((employee) => {
+        let employeeChoices = response.map((employee) => {
             return {
                 value: employee.id,
                 name: employee.first_name + " " + employee.last_name
             }
         })
         const sql = `SELECT * FROM roles`;
-        connection.query(sql, (err, results) => {
+        connection.query(sql, (err, response) => {
             if (err) throw err;
-            let roleChoices = results.map((role) => {
+            let roleChoices = response.map((role) => {
                 return {
                     value: role.id,
                     name: role.title
@@ -353,18 +354,18 @@ function updateEmployeeRole() {
 //update Employee Managers
 function updateEmployeeManager() {
     const sql = `SELECT * FROM employees`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let employeeChoices = results.map((employee) => {
+        let employeeChoices = response.map((employee) => {
             return {
                 value: employee.id,
                 name: employee.first_name + " " + employee.last_name
             }
         })
         const sql = `SELECT * FROM employees`;
-        connection.query(sql, (err, results) => {
+        connection.query(sql, (err, response) => {
             if (err) throw err;
-            let managerChoices = results.map((manager) => {
+            let managerChoices = response.map((manager) => {
                 return {
                     value: manager.id,
                     name: manager.first_name + " " + manager.last_name
@@ -404,25 +405,29 @@ function updateEmployeeManager() {
 
 // //view all Employees By Manager
 function viewEmployeesByManager() {
-    const sql = `SELECT * FROM employees`;
-    connection.query(sql, (err, results) => {
+    const sql =  `
+    SELECT DISTINCT
+        employees.manager_id,
+    CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
+    FROM employees
+    LEFT JOIN roles ON employees.role_id = roles.id
+    LEFT JOIN departments ON roles.department_id = departments.id
+    LEFT JOIN employees manager ON manager.id = employees.manager_id
+    `;
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let managerChoices = results.map((manager) => {
+                let managerChoices = response.map((manager) => {
             return {
-                value: manager.id,
-                name: manager.first_name + " " + manager.last_name
+                value: manager.manager_id,
+                name: manager.manager_name
             }
-        })
-        managerChoices.push({
-            value: null,
-            name: "No Manager"
         })
         return inquirer
             .prompt([
                 {
                     type: "list",
                     name: "manager",
-                    message: "For which Manager would you like to see an EmployeeList?",
+                    message: "For which Manager would you like to see an Employee List?",
                     choices: managerChoices
                 },
             ])
@@ -444,6 +449,7 @@ function viewEmployeesByManager() {
                 WHERE employees.manager_id = ?
                 `
                 const params = [response.manager];
+                console.log(response.manager);
                 connection.query(sql, params, (err, response) => {
                     if (err) throw err;
                     console.log("You are now viewing the Employee List");
@@ -456,9 +462,9 @@ function viewEmployeesByManager() {
 //view Employees By Department
 function viewEmployeesByDepartment() {
     const sql = `SELECT * FROM departments`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let departmentChoices = results.map((department) => {
+        let departmentChoices = response.map((department) => {
             return {
                 value: department.id,
                 name: department.name
@@ -503,9 +509,9 @@ function viewEmployeesByDepartment() {
 //delete Department
 function deleteDepartment() {
     const sql = `SELECT * FROM departments`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let departmentChoices = results.map((department) => {
+        let departmentChoices = response.map((department) => {
             return {
                 value: department.id,
                 name: department.name
@@ -534,9 +540,9 @@ function deleteDepartment() {
 // // delete Role
 function deleteRole() {
     const sql = `SELECT * FROM roles`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let roleChoices = results.map((role) => {
+        let roleChoices = response.map((role) => {
             return {
                 value: role.id,
                 name: role.title
@@ -566,9 +572,9 @@ function deleteRole() {
 // delete Employee
 function deleteEmployee() {
     const sql = `SELECT * FROM employees`;
-    connection.query(sql, (err, results) => {
+    connection.query(sql, (err, response) => {
         if (err) throw err;
-        let employeeChoices = results.map((employee) => {
+        let employeeChoices = response.map((employee) => {
             return {
                 value: employee.id,
                 name: employee.first_name + " " + employee.last_name
@@ -594,4 +600,48 @@ function deleteEmployee() {
             });
     })
 }
+
+
+//view Department Budget
+function viewDepartmentBudget() {
+    const sql = `SELECT * FROM departments`;
+    connection.query(sql, (err, response) => {
+        if (err) throw err;
+        let departmentChoices = response.map((department) => {
+            return {
+                value: department.id,
+                name: department.name
+            }
+        })
+        return inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "department",
+                    message: "For which Department would you like to view the total Utilized Budget?",
+                    choices: departmentChoices
+                },
+            ])
+            .then(function (response) {
+                const sql = `
+                SELECT 
+                SUM(salary) AS "Total Utilized Budget"                
+                FROM employees
+                LEFT JOIN roles ON employees.role_id = roles.id
+                LEFT JOIN departments ON roles.department_id = departments.id
+                LEFT JOIN employees manager ON manager.id = employees.manager_id
+                WHERE employees.role_id = ?
+                `
+                const params = [response.department];
+                connection.query(sql, params, (err, response) => {
+                    if (err) throw err;
+                    console.log("You are now viewing the Total Utilized Budget for the this Department");
+                    console.table(response);
+                    menuPrompt();
+                });
+            })
+    })
+}
+
+
 menuPrompt();
