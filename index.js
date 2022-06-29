@@ -154,9 +154,9 @@ function addNewDepartment() {
             const sql = `INSERT INTO departments(name)
             VALUES (?);`;
             const params = response.newDepartment;
-            connection.query(sql, params, (err, response) => {
+            connection.query(sql, params, (err) => {
                 if (err) throw err;
-                console.log(response.newDepartment + " has been added to the 'Departments' Table.");
+                console.log(params + " has been added to the 'Departments' Table.");
                 menuPrompt();
             });
 
@@ -214,9 +214,9 @@ function addNewRole() {
                 const sql = `INSERT INTO roles (title, salary, department_id)
             VALUES (?, ?, ?);`;
                 const params = [response.roleTitle, response.roleSalary, response.roleDepartment];
-                connection.query(sql, params, (err, response) => {
+                connection.query(sql, params, (err) => {
                     if (err) throw err;
-                    console.log(response.roleTitle + " has been added to the 'Roles' Table.");
+                    console.log(params[0] + 'has been added to the "Roles" Table');
                     menuPrompt();
                 });
 
@@ -235,7 +235,7 @@ function addNewEmployee() {
                 name: manager.first_name + " " + manager.last_name
             }
         })
-        managerChoices.push({
+        managerChoices.push({                                                                
             value: null,
             name: "No Manager"
         })
@@ -293,9 +293,9 @@ function addNewEmployee() {
                     const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
     VALUES (?, ?, ?, ?);`;
                     const params = [response.firstname, response.lastname, response.role, response.manager];
-                    connection.query(sql, params, (err, response) => {
+                    connection.query(sql, params, (err) => {
                         if (err) throw err;
-                        console.log(response.firstname + " " + response.lastname + " has been added to the 'Employees' Table.");
+                        console.log(params[0] + " " + params[1] + " has been added to the 'Employees' Table.");
                         menuPrompt();
                     });
                 })
@@ -405,7 +405,7 @@ function updateEmployeeManager() {
 
 // //view all Employees By Manager
 function viewEmployeesByManager() {
-    const sql =  `
+    const sql = `
     SELECT DISTINCT
         employees.manager_id,
     CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
@@ -416,7 +416,7 @@ function viewEmployeesByManager() {
     `;
     connection.query(sql, (err, response) => {
         if (err) throw err;
-                let managerChoices = response.map((manager) => {
+        let managerChoices = response.map((manager) => {
             return {
                 value: manager.manager_id,
                 name: manager.manager_name
@@ -440,7 +440,6 @@ function viewEmployeesByManager() {
                     roles.salary, 
                     roles.title AS job_title, 
                     departments.name AS department_name,
-                    employees.manager_id,
                 CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
                 FROM employees
                 LEFT JOIN roles ON employees.role_id = roles.id
@@ -449,10 +448,12 @@ function viewEmployeesByManager() {
                 WHERE employees.manager_id = ?
                 `
                 const params = [response.manager];
-                console.log(response.manager);
                 connection.query(sql, params, (err, response) => {
                     if (err) throw err;
-                    console.log("You are now viewing the Employee List");
+                    console.log(`You are now viewing the Employee List for ${response[0].manager}`);
+                    for (let i = 0; i < response.length; i++) {
+                        delete response[i].manager;
+                    }
                     console.table(response);
                     menuPrompt();
                 });
@@ -498,7 +499,50 @@ function viewEmployeesByDepartment() {
                 const params = [response.department];
                 connection.query(sql, params, (err, response) => {
                     if (err) throw err;
-                    console.log("You are now viewing the Employee List");
+                    console.log(`You are now viewing the Employee List for the ${response[0].department_name} Department`);
+                    console.table(response);
+                    menuPrompt();
+                });
+            })
+    })
+}
+
+//view Department Budget
+function viewDepartmentBudget() {
+    const sql = `SELECT * FROM departments`;
+    connection.query(sql, (err, response) => {
+        if (err) throw err;
+        let departmentChoices = response.map((department) => {
+            return {
+                value: department.id,
+                name: department.name
+            }
+        })
+        return inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "department",
+                    message: "For which Department would you like to view the total Utilized Budget?",
+                    choices: departmentChoices
+                },
+            ])
+            .then(function (response) {
+                const sql = `
+                SELECT 
+                SUM(salary) AS "Total Utilized Budget",   
+                departments.name AS "Department"             
+                FROM employees
+                LEFT JOIN roles ON employees.role_id = roles.id
+                LEFT JOIN departments ON roles.department_id = departments.id
+                LEFT JOIN employees manager ON manager.id = employees.manager_id
+                WHERE employees.role_id = ?
+                `
+                const params = [response.department];
+                connection.query(sql, params, (err, response) => {
+                    if (err) throw err;
+                    console.log(`You are now viewing the Total Utilized Budget for the ${response[0].Department} Department`);
+                    delete response[0].Department;
                     console.table(response);
                     menuPrompt();
                 });
@@ -600,48 +644,5 @@ function deleteEmployee() {
             });
     })
 }
-
-
-//view Department Budget
-function viewDepartmentBudget() {
-    const sql = `SELECT * FROM departments`;
-    connection.query(sql, (err, response) => {
-        if (err) throw err;
-        let departmentChoices = response.map((department) => {
-            return {
-                value: department.id,
-                name: department.name
-            }
-        })
-        return inquirer
-            .prompt([
-                {
-                    type: "list",
-                    name: "department",
-                    message: "For which Department would you like to view the total Utilized Budget?",
-                    choices: departmentChoices
-                },
-            ])
-            .then(function (response) {
-                const sql = `
-                SELECT 
-                SUM(salary) AS "Total Utilized Budget"                
-                FROM employees
-                LEFT JOIN roles ON employees.role_id = roles.id
-                LEFT JOIN departments ON roles.department_id = departments.id
-                LEFT JOIN employees manager ON manager.id = employees.manager_id
-                WHERE employees.role_id = ?
-                `
-                const params = [response.department];
-                connection.query(sql, params, (err, response) => {
-                    if (err) throw err;
-                    console.log("You are now viewing the Total Utilized Budget for the this Department");
-                    console.table(response);
-                    menuPrompt();
-                });
-            })
-    })
-}
-
 
 menuPrompt();
